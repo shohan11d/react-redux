@@ -1,13 +1,19 @@
 import { type } from '@testing-library/user-event/dist/type';
-import { createStore } from 'redux';
+import { createStore, combineReducers } from 'redux';
 
-const initialState = {
+const initialStateAccount = {
   balance: 0,
   loan: 0,
   loanPurpose: '',
 };
 
-function reducer(state = initialState, action) {
+const initialStateCustomer = {
+  fullName: '',
+  nationalId: '',
+  createdAt: '',
+};
+
+function accountReducer(state = initialStateAccount, action) {
   switch (action.type) {
     case 'account/deposit':
       return { ...state, balance: state.balance + action.payload };
@@ -34,7 +40,31 @@ function reducer(state = initialState, action) {
   }
 }
 
-const store = createStore(reducer);
+function customerReducer(state = initialStateCustomer, action) {
+  switch (action.type) {
+    case 'customer/createCustomer':
+      return {
+        ...state,
+        fullName: action.payLoad.fullName,
+        nationalID: action.payLoad.nationalID,
+        createdAt: action.payLoad.createdAt,
+      };
+
+    case 'customer/updateName':
+      return {
+        ...state,
+        fullName: action.payLoad,
+      };
+    default:
+      return state;
+  }
+}
+
+const rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,
+});
+const store = createStore(rootReducer);
 // store.dispatch({ type: 'account/deposit', payload: 500 });
 // store.dispatch({ type: 'account/withdraw', payload: 200 });
 // store.dispatch({
@@ -67,4 +97,21 @@ console.log(store.getState());
 store.dispatch(requestLoan(1000, 'buy a monitor'));
 console.log(store.getState());
 store.dispatch(payLoan());
+console.log(store.getState());
+
+function createCustomer(fullName, nationalID) {
+  return {
+    type: 'customer/createCustomer',
+    payLoad: { fullName, nationalID, createdAt: new Date().toISOString() },
+  };
+}
+
+function updateName(fullName) {
+  return {
+    type: 'account/updateName',
+    payLoad: fullName,
+  };
+}
+store.dispatch(createCustomer('Jonas Schmedtmann', '2323245'));
+store.dispatch(deposit(20))
 console.log(store.getState());
